@@ -1,7 +1,8 @@
 import { FC, useState, useEffect, useMemo, useCallback } from 'react'
+import { NoteCard } from '../components/NoteCard'
 import { Note } from '../models'
 import { NOTES_LOCAL_STORAGE_KEY } from '../constants'
-import { isSameDay, format } from 'date-fns'
+import { isSameDay } from 'date-fns'
 import { useHistory } from 'react-router'
 
 import Grid from '@material-ui/core/Grid'
@@ -11,14 +12,7 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers'
 import AddBoxIcon from '@material-ui/icons/AddBox'
-import {
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Paper,
-  Typography,
-} from '@material-ui/core'
+import { Container, Button } from '@material-ui/core'
 
 export const EventsPage: FC<{}> = () => {
   const [notes, setNotes] = useState<Array<Note>>([])
@@ -61,9 +55,9 @@ export const EventsPage: FC<{}> = () => {
   if (isLoading) return null
 
   return (
-    <div>
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <Grid container justifyContent="space-around">
+    <Container>
+      <Grid container justifyContent="space-around">
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
           <KeyboardDatePicker
             margin="normal"
             id="date-picker-dialog"
@@ -75,14 +69,15 @@ export const EventsPage: FC<{}> = () => {
               'aria-label': 'change date',
             }}
           />
-        </Grid>
-      </MuiPickersUtilsProvider>
+        </MuiPickersUtilsProvider>
 
-      <Button onClick={() => history.push(`/add/${date.getTime()}`)}>
-        <AddBoxIcon />
-        ADD
-      </Button>
-      <div>
+        <Button onClick={() => history.push(`/add/${date.getTime()}`)}>
+          <AddBoxIcon />
+          ADD
+        </Button>
+      </Grid>
+
+      <Grid justifyContent="space-around" item xs={6}>
         {todayNotes.map((note) => (
           <NoteCard
             onDelete={onDelete}
@@ -91,58 +86,7 @@ export const EventsPage: FC<{}> = () => {
             key={note.id}
           />
         ))}
-      </div>
-    </div>
+      </Grid>
+    </Container>
   )
 }
-
-const NoteCard: FC<{
-  note: Note
-  onEdit: (id: number) => void
-  onDelete: (id: number) => void
-}> = ({ note, onDelete, onEdit }) => {
-  const renderData = () => {
-    switch (note.kind) {
-      case 'Event':
-        return (
-          <div>
-            Адресс {note.address}, время {format(note.timestamp, 'HH:mm')}
-          </div>
-        )
-      case 'Holiday':
-        return <div>Бюджет {note.budget}</div>
-      case 'Other':
-        return <div>Описание {note.description}</div>
-      default:
-        return null
-    }
-  }
-
-  return (
-    <Paper>
-      <Card>
-        <CardContent>
-          <Typography variant="h5" component="h2">
-            {format(note.timestamp, 'MMMM, d, EEEE')}
-          </Typography>
-          <Typography color="textSecondary" gutterBottom>
-            {kindLabel[note.kind]}
-          </Typography>
-          <Typography variant="body2" component="p">
-            {renderData()}
-          </Typography>
-        </CardContent>
-        <CardActions>
-          <Button onClick={() => onEdit(note.id)}>EDIT</Button>
-          <Button onClick={() => onDelete(note.id)}>DELETE</Button>
-        </CardActions>
-      </Card>
-    </Paper>
-  )
-}
-
-const kindLabel = {
-  Holiday: 'Выходной',
-  Event: 'Событие',
-  Other: 'Другое',
-} as const
